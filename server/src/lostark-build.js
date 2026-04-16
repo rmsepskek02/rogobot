@@ -268,20 +268,20 @@ export function buildEquipment(data) {
     let name2 = '', enhancement = '00', setName = '', quality = 0;
 
     for (const t of tips) {
-      if (t.type === 'NameTagBox') name2 = (t.value || '').slice(2, 4);
-      if (t.type === 'SingleTextBox' && typeof t.value === 'string' && t.value.includes('상급 재련')) {
-        const idx = t.value.indexOf('[상급 재련]');
-        if (idx !== -1) {
-          const after = t.value.slice(idx + '[상급 재련] '.length);
-          const endIdx = after.indexOf('단계');
-          if (endIdx !== -1) {
-            const numStr = after.slice(0, endIdx - 2).trim();
-            enhancement = numStr.length === 1 ? '0' + numStr : numStr;
-          }
-        }
+      if (t.type === 'NameTagBox') {
+        // "+23 운명의 전율 ..." 형식에서 강화 수치 추출 (+ 기호 제외)
+        const clean = stripHtml(t.value || '');
+        const m = clean.match(/^\+(\d+)/);
+        if (m) name2 = m[1];
+      }
+      if (t.type === 'SingleTextBox') {
+        // 상급 재련 수치 파싱
+        const clean = stripHtml(t.value || '');
+        const m = clean.match(/상급 재련\D*?(\d+)\s*단계/);
+        if (m) enhancement = m[1].padStart(2, '0');
       }
       if (t.type === 'ItemPartBox' && t.value?.Element_000?.includes('세트')) {
-        const set = (t.value.Element_001 || '').substring(0, 2);
+        const set = stripHtml(t.value.Element_001 || '').substring(0, 2);
         setName = set === '장착' ? '짱쎔' : set;
       }
       if (t.type === 'ItemTitle' && t.value?.qualityValue !== undefined) {
