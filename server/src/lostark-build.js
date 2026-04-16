@@ -437,20 +437,9 @@ function parseAccePiece(eq, type, isArkPassive) {
 
   if (type === '팔찌') {
     for (const t of tips) {
-      if (t.type === 'ItemPartBox' && t.value?.Element_000 === '팔찌 효과') {
-        out += stripHtml(t.value.Element_001 || '')
-          .replace(/\[/g, '\n[')
-          .replace(/치명 \+/g, '\n 치명 ').replace(/특화 \+/g, '\n 특화 ')
-          .replace(/신속 \+/g, '\n 신속 ').replace(/제압 \+/g, '\n 제압 ')
-          .replace(/인내 \+/g, '\n 인내 ').replace(/숙련 \+/g, '\n 숙련 ')
-          .replace(/최대 생명력 \+/g, '\n 최대 생명력 ')
-          .replace(/최대 마나 \+/g, '\n 최대 마나 ')
-          .replace(/물리 방어력 \+/g, '\n 물리 방어력 ')
-          .replace(/마법 방어력 \+/g, '\n 마법 방어력 ')
-          .replace(/전투 중 생명력 회복량 \+/g, '\n 전투 중 생명력 회복량 ')
-          .replace(/무기 공격력 \+/g, '\n 무기 공격력 ')
-          .replace(/체력 \+/g, '\n 체력 ').replace(/힘 \+/g, '\n 힘 ')
-          .replace(/민첩 \+/g, '\n 민첩 ').replace(/지능 \+/g, '\n 지능 ');
+      if (t.type === 'ItemPartBox' && t.value?.Element_000?.includes('팔찌 효과')) {
+        const lines = stripHtml(t.value.Element_001 || '').split('\n').filter(l => l.trim());
+        for (const line of lines) out += '\n' + line;
       }
     }
   }
