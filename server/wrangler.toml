@@ -1,0 +1,14 @@
+name = "worker-green-meadow-d8c1"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "KVKV"
+id = "038e25a7da1646e39bdb29d5df4bf4f1"
+
+# 시크릿은 wrangler.toml에 포함하지 않음
+# Cloudflare 대시보드 또는 아래 명령어로 설정:
+#   wrangler secret put BOT_SECRET
+#   wrangler secret put KAKAO_EMAIL
+#   wrangler secret put KAKAO_PASSWORD
+#   wrangler secret put LOSTARK_API_KEY
