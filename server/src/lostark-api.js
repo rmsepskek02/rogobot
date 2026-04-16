@@ -4,9 +4,15 @@ import { KAKAO_UA } from './kakao.js';
 
 const LOSTARK_BASE = 'https://developer-lostark.game.onstove.com';
 
-export async function lostarkGet(path, apiKey) {
+// 공통 fetch 헬퍼 — GET/POST 중복 로직 통합
+async function lostarkFetch(path, apiKey, options = {}) {
   const res = await fetch(LOSTARK_BASE + path, {
-    headers: { 'accept': 'application/json', 'authorization': 'bearer ' + apiKey },
+    ...options,
+    headers: {
+      'accept': 'application/json',
+      'authorization': 'bearer ' + apiKey,
+      ...(options.headers || {}),
+    },
   });
   if (!res.ok) return null;
   const text = await res.text();
@@ -14,20 +20,16 @@ export async function lostarkGet(path, apiKey) {
   return JSON.parse(text);
 }
 
+export async function lostarkGet(path, apiKey) {
+  return lostarkFetch(path, apiKey);
+}
+
 export async function lostarkPost(path, body, apiKey) {
-  const res = await fetch(LOSTARK_BASE + path, {
+  return lostarkFetch(path, apiKey, {
     method: 'POST',
-    headers: {
-      'accept': 'application/json',
-      'authorization': 'bearer ' + apiKey,
-      'content-type': 'application/json',
-    },
+    headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
   });
-  if (!res.ok) return null;
-  const text = await res.text();
-  if (!text) return null;
-  return JSON.parse(text);
 }
 
 export async function getCharacterImage(name) {

@@ -1,26 +1,14 @@
 // worker.js — 클라우드플레어 Worker 진입점
 // KV 바인딩: KVKV
 // 시크릿:    BOT_SECRET, LOSTARK_API_KEY
+// 환경변수:  WORKER_BASE
 
 import { saveSession } from './src/kakao.js';
-import { processMessage } from './src/commands.js';
+import { processMessage } from './src/commands/index.js';
+import { rawPlain, rawHtml, rawImage, rawJson, getKey } from './src/response.js';
 
 export default {
   async fetch(request, env) {
-
-    // ── 공통 헬퍼 ──
-    const rawPlain = (t) => new Response(t, { headers: { 'content-type': 'text/plain;charset=UTF-8' } });
-    const rawHtml = (h) => new Response(h, { headers: { 'content-type': 'text/html;charset=UTF-8' } });
-    const rawImage = (i) => new Response(i, { headers: { 'content-type': 'image/jpeg' } });
-    const rawJson = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { 'content-type': 'application/json' } });
-
-    function getKey() {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let r = '';
-      for (let i = 0; i < 6; i++) r += chars.charAt(Math.floor(Math.random() * chars.length));
-      return r;
-    }
-
     const { pathname } = new URL(request.url);
 
     try {
@@ -45,7 +33,7 @@ export default {
       // ── 기존: OG 래퍼 ──
       if (pathname.startsWith('/e')) {
         const query = pathname.split('/')[2];
-        const url = `https://worker-green-meadow-d8c1.rmsepskek02.workers.dev/g/${query}`;
+        const url = `${env.WORKER_BASE}/g/${query}`;
         return rawHtml(`<html><head><meta property="og:image" content="${url}"><title>사진</title></head><body><img src="${url}" alt="img"/></body></html>`);
       }
 
