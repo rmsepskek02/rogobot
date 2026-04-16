@@ -160,6 +160,20 @@ export async function buildCharacterInfo(data) {
   };
 }
 
+// 아이템 레벨별 주급 골드 룩업 테이블 — [최소레벨, 골드] 내림차순 정렬
+const GOLD_TABLE = [
+  [1740, 52000 + 42000 + 54000],
+  [1730, 52000 + 42000 + 44000],
+  [1720, 42000 + 40000 + 35000],
+  [1710, 40000 + 33000 + 35000],
+  [1700, 27000 + 33000 + 23000],
+  [1690, 23000 + 21000 + 18000],
+  [1680, 21000 + 18000 + 16500],
+  [1670, 16500 + 11500 + 8800],
+  [1660, 11500 + 7200 + 6100],
+  [1640, 7200 + 6100],
+];
+
 // ── !배럭/부캐 — 배럭 목록 + 주급 계산 ──
 export function buildCharacters(data) {
   if (!data || !data.length) return '캐릭터를 찾을 수 없습니다.';
@@ -178,16 +192,8 @@ export function buildCharacters(data) {
   for (const ch of sorted) {
     if (ch.ServerName !== mainServer) continue;
     const lv = parseInt(ch.ItemAvgLevel.replace(/,/g, ''), 10);
-    if (lv >= 1740) gold += 52000 + 42000 + 54000;
-    else if (lv >= 1730) gold += 52000 + 42000 + 44000;
-    else if (lv >= 1720) gold += 42000 + 40000 + 35000;
-    else if (lv >= 1710) gold += 40000 + 33000 + 35000;
-    else if (lv >= 1700) gold += 27000 + 33000 + 23000;
-    else if (lv >= 1690) gold += 23000 + 21000 + 18000;
-    else if (lv >= 1680) gold += 21000 + 18000 + 16500;
-    else if (lv >= 1670) gold += 16500 + 11500 + 8800;
-    else if (lv >= 1660) gold += 11500 + 7200 + 6100;
-    else if (lv >= 1640) gold += 7200 + 6100;
+    const entry = GOLD_TABLE.find(([min]) => lv >= min);
+    if (entry) gold += entry[1];
     out += `Lv${ch.ItemAvgLevel.replace(/,/g, '')} [${ch.CharacterClassName.substring(0, 2)}] ${ch.CharacterName}\n`;
     mainCount++;
     if (mainCount === 6) out += `●주급 [${gold}G]\n` + '\u200b'.repeat(500) + '\n';
@@ -283,25 +289,30 @@ export function buildEquipment(data) {
   return out.trimEnd();
 }
 
+// 악세 연마 효과 약어 치환 맵 — [정규식 패턴, 치환 문자열] 순서 중요
+const POLISHING_ABBR = [
+  [/추가 피해 \+/g, '\n추피 '],
+  [/적에게 주는 피해 \+/g, '\n적주피 '],
+  [/무기 공격력 \+/g, '\n무공 '],
+  [/세레나데, 신앙, 조화 게이지 획득량 \+/g, '\n아획량 '],
+  [/최대 생명력 \+/g, '\n최생 '],
+  [/최대 마나 \+/g, '\n최마 '],
+  [/상태이상 공격 지속시간 \+/g, '\n상공지 '],
+  [/전투 중 생명력 회복량 \+/g, '\n생회 '],
+  [/파티원 회복 효과 \+/g, '\n파회 '],
+  [/파티원 보호막 효과 \+/g, '\n파보 '],
+  [/치명타 적중률 \+/g, '\n치적 '],
+  [/치명타 피해 \+/g, '\n치피 '],
+  [/아군 공격력 강화 효과 \+/g, '\n아공 '],
+  [/아군 피해량 강화 효과 \+/g, '\n아피 '],
+  [/공격력 \+/g, '\n공격력 '],
+  [/낙인력 \+/g, '\n낙인력 '],
+];
+
 // ── 악세 개별 파싱 헬퍼 ──
 function parsePolishing(str) {
-  let result = str
-    .replace(/추가 피해 \+/g, '\n추피 ')
-    .replace(/적에게 주는 피해 \+/g, '\n적주피 ')
-    .replace(/무기 공격력 \+/g, '\n무공 ')
-    .replace(/세레나데, 신앙, 조화 게이지 획득량 \+/g, '\n아획량 ')
-    .replace(/최대 생명력 \+/g, '\n최생 ')
-    .replace(/최대 마나 \+/g, '\n최마 ')
-    .replace(/상태이상 공격 지속시간 \+/g, '\n상공지 ')
-    .replace(/전투 중 생명력 회복량 \+/g, '\n생회 ')
-    .replace(/파티원 회복 효과 \+/g, '\n파회 ')
-    .replace(/파티원 보호막 효과 \+/g, '\n파보 ')
-    .replace(/치명타 적중률 \+/g, '\n치적 ')
-    .replace(/치명타 피해 \+/g, '\n치피 ')
-    .replace(/아군 공격력 강화 효과 \+/g, '\n아공 ')
-    .replace(/아군 피해량 강화 효과 \+/g, '\n아피 ')
-    .replace(/공격력 \+/g, '\n공격력 ')
-    .replace(/낙인력 \+/g, '\n낙인력 ');
+  let result = str;
+  for (const [from, to] of POLISHING_ABBR) result = result.replace(from, to);
 
   const gradeMap = {
     '최생': ['6500', '3250', '1300'],
@@ -535,6 +546,20 @@ export function buildArkGrid(data) {
   return out.trimEnd();
 }
 
+// 수집품 이름 약어 치환 맵
+const COLLECTIBLE_NAMES = {
+  '모코코 씨앗': '모코코',
+  '섬의 마음': '섬마',
+  '위대한 미술품': '\n미술품',
+  '거인의 심장': '거심',
+  '이그네아의 징표': '\n이그네아',
+  '항해 모험물': '모험물',
+  '세계수의 잎': '\n세계수',
+  '오르페우스의 별': '별',
+  '기억의 오르골': '\n오르골',
+  '크림스네일의 해도': '해도',
+};
+
 // ── !내실 — 내실 (수집품/성향/스포) ──
 export function buildCollectibles(profileData, collectiblesData) {
   if (!profileData || !collectiblesData) return '응애';
@@ -549,13 +574,8 @@ export function buildCollectibles(profileData, collectiblesData) {
   out += '\n\n< 수집품 >\n';
   for (const c of (collectiblesData || [])) out += `${c.Type}: ${c.Point} `;
 
-  return out
-    .replace('모코코 씨앗', '모코코').replace('섬의 마음', '섬마')
-    .replace('위대한 미술품', '\n미술품').replace('거인의 심장', '거심')
-    .replace('이그네아의 징표', '\n이그네아').replace('항해 모험물', '모험물')
-    .replace('세계수의 잎', '\n세계수').replace('오르페우스의 별', '별')
-    .replace('기억의 오르골', '\n오르골').replace('크림스네일의 해도', '해도')
-    .trimEnd();
+  for (const [from, to] of Object.entries(COLLECTIBLE_NAMES)) out = out.replace(from, to);
+  return out.trimEnd();
 }
 
 // ── !낙원 — 낙원력 (charEquipMap: 삽입 순서 보장, mainName 첫 번째) ──
