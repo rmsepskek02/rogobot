@@ -7,10 +7,17 @@ server/             → Cloudflare Worker
   worker.js         → 진입점 (라우팅)
   wrangler.toml     → 배포 설정
   src/
+    response.js     → 응답 헬퍼 (rawJson, rawPlain 등)
     kakao.js        → 카카오 인증/세션
-    commands.js     → 메시지 명령어 처리
+    kakao-crypto.js → CryptoJS 번들
     lostark-api.js  → 로아 API 호출
     lostark-build.js→ 로아 빌드 정보 파싱
+    commands/
+      index.js      → processMessage 디스패처
+      lostark.js    → 캐릭터 조회 명령어
+      market.js     → 시세/거래소 명령어
+      fun.js        → 재미/랜덤 명령어
+      info.js       → 정보성 명령어
 
 msgbot/Bots/        → 메신저봇 앱 스크립트
   로고봇/           → 메인 봇 로직
@@ -41,7 +48,7 @@ log/                → 작업별 로그
 Cloudflare Worker
   server/worker.js
       ├── 카카오 인증  (src/kakao.js)
-      ├── 명령어 처리  (src/commands.js)
+      ├── 명령어 처리  (src/commands/index.js → lostark/market/fun/info)
       └── 로아 API    (src/lostark-*.js)
               ↓
       로스트아크 API
