@@ -62,7 +62,7 @@ export function handleInfo(msg, env) {
   for (const cmd of ['!ㄿ', '!로펙', '!ㄹㅍ']) {
     if (msg.startsWith(cmd + ' ')) {
       const nick = msg.slice(cmd.length + 1).trim();
-      if (nick) return `https://legacy.lopec.kr/search/search.html?headerCharacterName=${encodeURIComponent(nick)}`;
+      if (nick) return `https://lopec.kr/character/specPoint/${encodeURIComponent(nick)}`;
     }
     if (msg === cmd) return 'https://lopec.kr/';
   }

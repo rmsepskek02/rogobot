@@ -711,6 +711,10 @@ export function buildEgir(dataArr) {
   for (let i = 0; i < dataArr.length; i++) {
     for (const item of (dataArr[i].Items || [])) {
       if ((i === 6 || i === 7) && item.Name.includes('11')) continue;
+      // 장인의 야금술/재봉술 1·2단계 제외
+      if ((i === 4 || i === 5) && (item.Name.includes('1단계') || item.Name.includes('2단계'))) continue;
+      // 업화 [15-18] 제외
+      if ((i === 6 || i === 7) && item.Name.includes('15-18')) continue;
       let name = item.Name;
       if (i === 8 || i === 9) name = name.replace(/\[일품\] 명인의 /g, '');
       if (i === 10) name = name.replace(/\[일품\] 거장의 /g, '');
@@ -725,6 +729,7 @@ export function buildGemPrice(data1, data2) {
   if (!data1 || !data2) return '장사안함';
   let out = '등급 이름 / 전날평균가 / 최저가\n';
   for (const item of [...(data1.Items || []), ...(data2.Items || [])]) {
+    if (item.Grade === '고급') continue; // 고급 등급 제외
     out += `${item.Grade} ${item.Name} / ${Math.round(item.YDayAvgPrice)} / ${item.CurrentMinPrice}\n`;
   }
   return out.trimEnd().replace(/의 젬/g, '');

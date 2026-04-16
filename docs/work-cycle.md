@@ -6,7 +6,7 @@
 에이전트 정의: [.claude/agents/](.claude/agents/)
 
 ## 1단계 — 문서화
-- `docs/YYYY-MM-DD-hh:mm_작업명/Plan.md` 생성
+- `docs/YYYY-MM-DD hh-mm-작업명/Plan.md` 생성
 - [task-template.md](task-template.md) 양식에 따라 작성
 - 사용자에게 Plan.md 내용 확인 요청 후 승인 받으면 다음 단계 진행
 

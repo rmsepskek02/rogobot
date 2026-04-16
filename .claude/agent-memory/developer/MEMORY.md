@@ -61,6 +61,14 @@
   for (const line of lines) out += '\n' + line;
   ```
 
+### buildEgir() 인덱스 구조 (2026-04-16)
+- `handleEgir`의 queries 배열 순서와 `buildEgir()`의 `i` 인덱스가 반드시 일치해야 함
+  - 0: 운명, 1: 용암의 숨결, 2: 빙하의 숨결, 3: 아비도스
+  - 4: 장인의 야금술, 5: 장인의 재봉술
+  - 6: 야금술 업화, 7: 재봉술 업화
+  - 8: 쫄깃한 꼬치구이, 9: 허브 스테이크, 10: 채끝 스테이크
+- 인덱스 기반 필터는 queries 순서 변경 시 반드시 함께 수정해야 함
+
 ### `!장비` NameTagBox / SingleTextBox 파싱 (2026-04-16)
 - 강화 수치: `NameTagBox` 타입의 value에서 `+NN` 패턴 추출, `+` 기호 제외한 숫자만 사용
   ```js

@@ -29,11 +29,11 @@ docs/               → 프로젝트 문서
   task-template.md  → Plan.md 작성 템플릿
   log-template.md   → log.md 작성 템플릿
   task-history.md   → 작업 이력
-  YYYY-MM-DD-hh:mm_작업명/ → 작업별 계획 문서
+  YYYY-MM-DD hh-mm-작업명/ → 작업별 계획 문서
     Plan.md
 
 log/                → 작업별 로그
-  YYYY-MM-DD-hh:mm_작업명/ → 작업별 테스트 로그
+  YYYY-MM-DD hh-mm-작업명/ → 작업별 테스트 로그
     log.md
 ```
 

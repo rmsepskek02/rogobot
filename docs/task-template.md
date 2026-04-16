@@ -4,7 +4,7 @@
 
 # [작업명]
 
-- **날짜**: YYYY-MM-DD hh:mm_작업명
+- **날짜**: YYYY-MM-DD hh-mm-작업명
 - **담당**: developer / qa
 - 작업명은 영어로 작성할 것
 
