@@ -39,14 +39,9 @@
 ## 작업 이력
 [docs/task-history.md](docs/task-history.md)
 
-## 진행 중인 작업
-| 작업명 | 경로 |
-|--------|------|
-| Feature Migration & Cleanup | [docs/2026-04-16-feature-migration/Plan.md](docs/2026-04-16-feature-migration/Plan.md) |
-
 ## 로그
 | 경로 | 설명 |
 |------|------|
-| log/YYYY-MM-DD-hh:mm_작업명/log.md | 작업별 테스트 및 운영 로그 |
+| log/YYYY-MM-DD hh-mm-작업명/log.md | 작업별 테스트 및 운영 로그 |
 | msgbot/FATAL_ERROR_LOG.log | 봇 런타임 치명적 오류 |
 | msgbot/GLOBAL_LOG.json | 봇 전체 로그 |
