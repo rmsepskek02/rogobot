@@ -27,4 +27,48 @@
 ### 주요 파일 경로
 - 메신저봇 스크립트: `msgbot/Bots/로고봇/로고봇.js`
 - 서버 라우팅: `server/worker.js`
-- 명령어 처리: `server/src/commands.js`
+- 명령어 처리: `server/src/commands/index.js` (리팩토링 후 commands/ 하위로 분산)
+
+---
+
+## 로스트아크 API 응답 파싱 주의사항
+
+### HTML 태그 포함 필드 (2026-04-16)
+- 로아 API 응답의 일부 문자열 필드에 `<FONT>`, `<img>`, `<br>` 등 HTML 태그가 포함됨
+- 영향받는 파서: `buildGems`, `parsePolishing`, `parseAccePiece`, `buildArkPassive`, `buildArkGrid`, `buildEquipment`
+- `lostark-build.js`에 `stripHtml()` 헬퍼 추가됨 — 문자열 파싱 전 반드시 적용할 것
+  ```js
+  function stripHtml(str) {
+    if (!str) return '';
+    return str.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '');
+  }
+  ```
+- `parsePolishing()`은 함수 진입 시 제일 먼저 `stripHtml` 적용 — 미적용 시 POLISHING_ABBR 정규식 불일치로 등급 오판 발생
+
+### `ItemPartBox` Element_000 HTML 태그 감싸짐 (2026-04-16)
+- `ItemPartBox` 타입의 `Element_000` 값이 HTML 태그로 감싸진 형태일 수 있음
+  - 예: `"<FONT COLOR='#A9D0F5'>팔찌 효과</FONT>"`
+- 엄격 비교(`===`) 대신 `.includes()`로 비교해야 함
+  - 수정 전: `t.value?.Element_000 === '팔찌 효과'`
+  - 수정 후: `t.value?.Element_000?.includes('팔찌 효과')`
+- `추가 효과` 조건에도 동일한 문제가 있을 수 있으나 미확인 (현재는 엄격 비교 유지 중)
+
+### 팔찌 효과 출력 패턴 (2026-04-16)
+- `stripHtml`이 `<br>` → `\n` 변환을 처리하므로 별도 replace 체인 불필요
+- 각 줄을 `.split('\n').filter(l => l.trim())`으로 빈 줄 제거 후 각 줄 앞에 `\n` 추가
+  ```js
+  const lines = stripHtml(t.value.Element_001 || '').split('\n').filter(l => l.trim());
+  for (const line of lines) out += '\n' + line;
+  ```
+
+### `!장비` NameTagBox / SingleTextBox 파싱 (2026-04-16)
+- 강화 수치: `NameTagBox` 타입의 value에서 `+NN` 패턴 추출, `+` 기호 제외한 숫자만 사용
+  ```js
+  const m = clean.match(/^\+(\d+)/);
+  if (m) name2 = m[1];  // "23" (not "+23")
+  ```
+- 상급 재련: `SingleTextBox` 타입의 value에서 `상급 재련 N단계` 패턴 추출
+  ```js
+  const m = clean.match(/상급 재련\D*?(\d+)\s*단계/);
+  if (m) enhancement = m[1].padStart(2, '0');
+  ```
