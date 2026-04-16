@@ -1,0 +1,11 @@
+{
+    "main": "로아API카링.js",
+    "option": {
+        "apiLevel": 1,
+        "useUnifiedParams": false,
+        "useBabel": false,
+        "scriptPower": true,
+        "backupDBOnDelete": true,
+        "offOnRuntimeError": true
+    }
+}

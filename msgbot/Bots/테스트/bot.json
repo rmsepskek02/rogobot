@@ -1,0 +1,17 @@
+{
+    "main": "테스트.js",
+    "option": {
+        "apiLevel": 1,
+        "useUnifiedParams": false,
+        "useBabel": false,
+        "scriptPower": true,
+        "offOnRuntimeError": true,
+        "optimization": 0,
+        "debugRoom": {
+            "name": "한용희",
+            "sender": "나다",
+            "isGroupChat": false,
+            "packageName": "com.xfl.msgbot"
+        }
+    }
+}

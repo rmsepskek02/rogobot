@@ -1,0 +1,7 @@
+#MacOSX Patch
+.DS_Store
+
+.idea
+dist/
+node_modules/
+package-lock.json

@@ -1,0 +1,60 @@
+{
+    "chats": [
+        {
+            "sender": "나다",
+            "content": "",
+            "timeMillis": 1686559505301,
+            "isBot": false,
+            "isLong": false,
+            "long": "\/storage\/emulated\/0\/msgbot\/Bots\/테스트\/DebugRoom\/message\/1686559505301-119712487057719}"
+        },
+        {
+            "sender": "나다",
+            "content": "ㅇㅇ",
+            "timeMillis": 1686559508120,
+            "isBot": false,
+            "isLong": false,
+            "long": "\/storage\/emulated\/0\/msgbot\/Bots\/테스트\/DebugRoom\/message\/1686559508120-119715291132871}"
+        },
+        {
+            "sender": "나다",
+            "content": "!문의 113",
+            "timeMillis": 1686559516467,
+            "isBot": false,
+            "isLong": false,
+            "long": "\/storage\/emulated\/0\/msgbot\/Bots\/테스트\/DebugRoom\/message\/1686559516467-119723639245788}"
+        },
+        {
+            "sender": "테스트",
+            "content": "랜타디 로열패밀리의 한용희: 문휘",
+            "timeMillis": 1686559878044,
+            "isBot": true,
+            "isLong": false,
+            "long": "\/storage\/emulated\/0\/msgbot\/Bots\/테스트\/DebugRoom\/message\/1686559878044-120085218664221}"
+        },
+        {
+            "sender": "테스트",
+            "content": "한용희의 한용희: 문의",
+            "timeMillis": 1686559909977,
+            "isBot": true,
+            "isLong": false,
+            "long": "\/storage\/emulated\/0\/msgbot\/Bots\/테스트\/DebugRoom\/message\/1686559909977-120117148357506}"
+        },
+        {
+            "sender": "테스트",
+            "content": "한용희의 한용희: 문휘",
+            "timeMillis": 1686559980400,
+            "isBot": true,
+            "isLong": false,
+            "long": "\/storage\/emulated\/0\/msgbot\/Bots\/테스트\/DebugRoom\/message\/1686559980400-120187575749456}"
+        },
+        {
+            "sender": "테스트",
+            "content": "한용희의 한용희: 하앟",
+            "timeMillis": 1686559983194,
+            "isBot": true,
+            "isLong": false,
+            "long": "\/storage\/emulated\/0\/msgbot\/Bots\/테스트\/DebugRoom\/message\/1686559983194-120190366445762}"
+        }
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "main": "카링테스트.js",
+    "option": {
+        "apiLevel": 1,
+        "useUnifiedParams": false,
+        "useBabel": false,
+        "scriptPower": false
+    }
+}

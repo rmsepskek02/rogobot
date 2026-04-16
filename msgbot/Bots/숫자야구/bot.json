@@ -1,0 +1,9 @@
+{
+    "main": "숫자야구.js",
+    "option": {
+        "apiLevel": 1,
+        "useUnifiedParams": false,
+        "useBabel": false,
+        "scriptPower": true
+    }
+}
