@@ -12,6 +12,12 @@ function tooltipToJSON(s) {
   } catch { return []; }
 }
 
+// API 응답 문자열에서 HTML 태그 제거 (<br> → \n 변환 후 나머지 태그 제거)
+function stripHtml(str) {
+  if (!str) return '';
+  return str.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '');
+}
+
 // 카카오링크 templateArgs 빌드 (전송은 모바일에서 담당)
 export async function buildCharacterInfo(data) {
   const profile = data['ArmoryProfile'];
@@ -211,15 +217,18 @@ export function buildGems(data) {
 
   const pairs = gems.map(gem => {
     const effect = skills.find(s => s.GemSlot === gem.Slot);
-    const name = gem.Name
+    const name = stripHtml(gem.Name)
       .replace(/의 보석/g, '')
-      .replace(/레벨/g, '')
-      .replace(/10 /g, '10');
+      .replace(/레벨\s*/g, '')
+      .replace(/\(귀속\)/g, '')
+      .replace(/10 /g, '10')
+      .replace(/\s+/g, ' ')
+      .trim();
     return { level: gem.Level, name, skill: effect?.Name || '' };
   });
 
   pairs.sort((a, b) => b.level - a.level);
-  return pairs.map(p => `${p.name}${p.skill}`).join('\n').replace(/\n /g, '\n').replace(/^ /, '');
+  return pairs.map(p => [p.name, p.skill].filter(Boolean).join(' ')).join('\n');
 }
 
 // ── !스킬 — 스킬 정보 ──
@@ -311,7 +320,7 @@ const POLISHING_ABBR = [
 
 // ── 악세 개별 파싱 헬퍼 ──
 function parsePolishing(str) {
-  let result = str;
+  let result = stripHtml(str);
   for (const [from, to] of POLISHING_ABBR) result = result.replace(from, to);
 
   const gradeMap = {
@@ -358,22 +367,18 @@ function parseAccePiece(eq, type, isArkPassive) {
 
   for (const t of tips) {
     if (t.type === 'ItemTitle' && t.value) {
-      const lStr = t.value.leftStr0 || '';
-      if (lStr.includes('이')) {
-        out += isArkPassive ? '\n - ' + lStr.slice(0, -1) : '\n - ' + lStr.slice(0, -2);
-      } else if (type === '팔찌') {
+      const lStr = stripHtml(t.value.leftStr0 || '');
+      if (type === '팔찌') {
         out += '\n\n' + lStr + '\n';
-      } else if (type === '반지') {
-        out += isArkPassive ? '\n - ' + lStr : '\n - ' + lStr.slice(0, -1);
       } else {
-        out += isArkPassive ? '\n' + lStr : '\n - ' + lStr;
+        out += '\n - ' + lStr;
       }
     }
     if (t.type === 'IndentStringGroup' && t.value?.Element_000?.contentStr) {
       try {
         const cs = t.value.Element_000.contentStr;
-        const e00 = cs.Element_000?.contentStr || '';
-        const e01 = cs.Element_001?.contentStr || '';
+        const e00 = stripHtml(cs.Element_000?.contentStr || '');
+        const e01 = stripHtml(cs.Element_001?.contentStr || '');
         const e1 = e00.slice(1, 2);
         const e2 = e00.slice(e00.length - 3, e00.length - 1).trim();
         const e3 = e01.slice(1, 2);
@@ -386,7 +391,7 @@ function parseAccePiece(eq, type, isArkPassive) {
   if (!isArkPassive) {
     for (const t of tips) {
       if (t.type === 'ItemPartBox' && t.value?.Element_000 === '추가 효과') {
-        let cha = (t.value.Element_001 || '')
+        let cha = stripHtml(t.value.Element_001 || '')
           .replace(/치명 /g, '치').replace(/특화 /g, '특').replace(/신속 /g, '신')
           .replace(/제압 /g, '제').replace(/인내 /g, '인').replace(/숙련 /g, '숙');
         out += cha;
@@ -410,7 +415,7 @@ function parseAccePiece(eq, type, isArkPassive) {
   if (type === '팔찌') {
     for (const t of tips) {
       if (t.type === 'ItemPartBox' && t.value?.Element_000 === '팔찌 효과') {
-        out += (t.value.Element_001 || '')
+        out += stripHtml(t.value.Element_001 || '')
           .replace(/\[/g, '\n[')
           .replace(/치명 \+/g, '\n 치명 ').replace(/특화 \+/g, '\n 특화 ')
           .replace(/신속 \+/g, '\n 신속 ').replace(/제압 \+/g, '\n 제압 ')
@@ -504,11 +509,11 @@ export function buildArkPassive(data) {
   let temp = '';
   for (const p of points) temp += `${p.Name}[${p.Value}] `;
   temp += '\n\n[진화]\n';
-  for (const e of effects) { if (e.Name === '진화') temp += e.Description + '\n'; }
+  for (const e of effects) { if (e.Name === '진화') temp += stripHtml(e.Description) + '\n'; }
   temp += '[깨달음]\n';
-  for (const e of effects) { if (e.Name === '깨달음') temp += e.Description + '\n'; }
+  for (const e of effects) { if (e.Name === '깨달음') temp += stripHtml(e.Description) + '\n'; }
   temp += '[도약]\n';
-  for (const e of effects) { if (e.Name === '도약') temp += e.Description + '\n'; }
+  for (const e of effects) { if (e.Name === '도약') temp += stripHtml(e.Description) + '\n'; }
 
   return temp
     .replace(/깨달음 /g, ' - ')
@@ -538,7 +543,7 @@ export function buildArkGrid(data) {
   }
   out += '\n[젬]\n';
   for (const ef of (arkGrid.Effects || [])) {
-    out += `Lv.${ef.Level} ${ef.Tooltip}`
+    out += `Lv.${ef.Level} ${stripHtml(ef.Tooltip)}`
       .replace('아군 피해량 강화 효과', '아피강')
       .replace('아군 공격력 강화 효과', '아공강')
       .replace('보스 등급 이상 몬스터에게 주는 피해', '보스 피해') + '\n';
