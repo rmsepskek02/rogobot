@@ -346,14 +346,26 @@ function parsePolishing(str) {
   for (const line of result.split('\n')) {
     if (!line.trim()) continue;
     let matched = false;
-    for (const [key, vals] of Object.entries(gradeMap)) {
-      if (line.includes(key)) {
-        if (line.includes(vals[0])) out += '\n[상] ' + line;
-        else if (line.includes(vals[1])) out += '\n[중] ' + line;
-        else if (line.includes(vals[2])) out += '\n[하] ' + line;
-        else out += '\n' + line;
-        matched = true;
-        break;
+
+    // 무기 공격력 % 특수 처리 — flat 기준값(960/480/195)과 별도로 등급 판별
+    if (line.includes('무공') && line.includes('%')) {
+      if (line.includes('3.00%') || line.includes('3.0%')) out += '\n[상] ' + line;
+      else if (line.includes('1.80%') || line.includes('1.8%')) out += '\n[중] ' + line;
+      else if (line.includes('0.80%') || line.includes('0.8%')) out += '\n[하] ' + line;
+      else out += '\n' + line;
+      matched = true;
+    }
+
+    if (!matched) {
+      for (const [key, vals] of Object.entries(gradeMap)) {
+        if (line.includes(key)) {
+          if (line.includes(vals[0])) out += '\n[상] ' + line;
+          else if (line.includes(vals[1])) out += '\n[중] ' + line;
+          else if (line.includes(vals[2])) out += '\n[하] ' + line;
+          else out += '\n' + line;
+          matched = true;
+          break;
+        }
       }
     }
     if (!matched) out += '\n' + line;
@@ -369,7 +381,7 @@ function parseAccePiece(eq, type, isArkPassive) {
     if (t.type === 'ItemTitle' && t.value) {
       const lStr = stripHtml(t.value.leftStr0 || '');
       if (type === '팔찌') {
-        out += '\n\n' + lStr + '\n';
+        out += '\n\n' + lStr; // 포인트 추가 후 Loop 4가 \n으로 시작하므로 trailing \n 없음
       } else {
         out += '\n - ' + lStr;
       }
@@ -399,16 +411,27 @@ function parseAccePiece(eq, type, isArkPassive) {
     }
   }
 
+  // 품질값, 아크패시브 포인트 사전 수집
+  let qVal = 0, ptName = '', ptVal = '';
   for (const t of tips) {
-    if (t.type === 'ItemTitle' && type !== '어빌리티 스톤' && type !== '팔찌') {
-      if (isArkPassive) out += `(${t.value?.qualityValue ?? 0}) [`;
-      else out += `(${t.value?.qualityValue ?? 0})\n`;
-    }
+    if (t.type === 'ItemTitle') qVal = t.value?.qualityValue ?? 0;
     if (isArkPassive && t.type === 'ItemPartBox' && t.value?.Element_000?.includes('포인트')) {
-      out += (t.value.Element_001 || '').replace(/깨달음 +\+/g, '') + ']';
+      const m = stripHtml(t.value.Element_001 || '').match(/(\S+)\s+\+?(\d+)/);
+      if (m) { ptName = m[1]; ptVal = m[2]; }
     }
-    if (t.type === 'ItemPartBox' && t.value?.Element_000?.includes('연마')) {
-      out += parsePolishing(t.value.Element_001 || '');
+  }
+
+  if (type === '팔찌') {
+    // 팔찌: 포인트를 이름 줄에 인라인 추가 (팔찌 효과는 Loop 4에서 \n으로 시작)
+    if (ptVal) out += ` ${ptName}:${ptVal}`;
+  } else if (type !== '어빌리티 스톤') {
+    // 목걸이/귀걸이/반지: 품질 + 깨달음 포인트
+    out += isArkPassive && ptVal ? `(${qVal}) 깨:${ptVal}` : `(${qVal})`;
+    // 연마 효과
+    for (const t of tips) {
+      if (t.type === 'ItemPartBox' && t.value?.Element_000?.includes('연마')) {
+        out += parsePolishing(t.value.Element_001 || '');
+      }
     }
   }
 
@@ -453,7 +476,7 @@ export function buildAccessories(data) {
       }
     }
   }
-  out += `\n ● 평균 품질: ${countQ ? Math.round(totalQ / countQ * 10) / 10 : 0}`;
+  out += ` ● 평균 품질: ${countQ ? Math.round(totalQ / countQ * 10) / 10 : 0}`;
 
   if (!isArkPassive && engraving?.Engravings) {
     out += '\n';
@@ -474,7 +497,7 @@ export function buildAccessories(data) {
     }
   }
 
-  return out.replace(/고대 팔찌\n/, '고대 팔찌').replace(/\+/g, '');
+  return out.replace(/\+/g, '');
 }
 
 // ── !각인 — 각인 상세 ──
