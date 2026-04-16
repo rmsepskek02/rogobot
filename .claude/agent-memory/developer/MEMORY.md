@@ -61,6 +61,21 @@
   for (const line of lines) out += '\n' + line;
   ```
 
+### `parseAccePiece` 품질/포인트 출력 패턴 (2026-04-16)
+- 품질값과 아크패시브 포인트를 사전 수집 후 한 줄에 출력: `(품질) 깨:포인트`
+  ```js
+  let qVal = 0, ptName = '', ptVal = '';
+  for (const t of tips) {
+    if (t.type === 'ItemTitle') qVal = t.value?.qualityValue ?? 0;
+    if (isArkPassive && t.type === 'ItemPartBox' && t.value?.Element_000?.includes('포인트')) {
+      const m = stripHtml(t.value.Element_001 || '').match(/(\S+)\s+\+?(\d+)/);
+      if (m) { ptName = m[1]; ptVal = m[2]; }
+    }
+  }
+  ```
+- 팔찌는 `이름 포인트명:값` 형식, 연마는 별도 루프로 추가
+- 무기공격력 `%` 연마 효과는 gradeMap과 별도 분기 필요 (티어4 기준: 상 3.00%, 중 1.80%, 하 0.80%)
+
 ### buildEgir() 인덱스 구조 (2026-04-16)
 - `handleEgir`의 queries 배열 순서와 `buildEgir()`의 `i` 인덱스가 반드시 일치해야 함
   - 0: 운명, 1: 용암의 숨결, 2: 빙하의 숨결, 3: 아비도스
