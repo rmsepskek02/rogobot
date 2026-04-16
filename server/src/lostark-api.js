@@ -14,6 +14,22 @@ export async function lostarkGet(path, apiKey) {
   return JSON.parse(text);
 }
 
+export async function lostarkPost(path, body, apiKey) {
+  const res = await fetch(LOSTARK_BASE + path, {
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'authorization': 'bearer ' + apiKey,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) return null;
+  const text = await res.text();
+  if (!text) return null;
+  return JSON.parse(text);
+}
+
 export async function getCharacterImage(name) {
   try {
     const res = await fetch(`https://lostark.game.onstove.com/Profile/Character/${encodeURIComponent(name)}`, {
