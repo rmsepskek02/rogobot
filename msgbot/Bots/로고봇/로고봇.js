@@ -1,6 +1,6 @@
 const scriptName = "로고봇";
 
-// 한용희 replier 캐시 — 에러 알림 및 !전달 명령어에 사용
+// 한용희 replier 캐시 — 에러 알림 및 !문의 명령어에 사용
 var hanReplier = null;
 
 // =====================================================
@@ -177,11 +177,11 @@ function onNotificationPosted(sbn, sm) {
         continue;
       }
 
-      // !전달 명령어: 누구나 사용 가능, 한용희에게 메시지 전달
-      if (msg.startsWith("!전달")) {
+      // !문의 명령어: 누구나 사용 가능, 한용희에게 메시지 전달
+      if (msg.startsWith("!문의")) {
         var content = msg.length > 3 ? msg.substring(3).trim() : "";
         if (content === "") {
-          replier.reply("사용법: !전달 전달할내용");
+          replier.reply("사용법: !문의 전달할내용");
         } else if (hanReplier == null) {
           replier.reply("한용희 세션 없음 — 한용희가 먼저 메시지를 보내야 합니다");
         } else {

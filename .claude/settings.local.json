@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node index.js)"
+      "Bash(node index.js)",
+      "Bash(npx wrangler *)"
     ],
     "additionalDirectories": [
       "d:\\Dmain\\dev\\RogoBotGit\\rogobot\\docs"
