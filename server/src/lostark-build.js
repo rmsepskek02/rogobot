@@ -166,18 +166,20 @@ export async function buildCharacterInfo(data) {
   };
 }
 
-// 아이템 레벨별 주급 골드 룩업 테이블 — [최소레벨, 골드] 내림차순 정렬
+// 아이템 레벨별 주급 골드 룩업 테이블 — [최소레벨, 비귀속골드, 귀속골드] 내림차순 정렬
+// 귀속골드: 지평의 성당 (1700 이상 입장 가능)
 const GOLD_TABLE = [
-  [1740, 52000 + 42000 + 54000],
-  [1730, 52000 + 42000 + 44000],
-  [1720, 42000 + 40000 + 35000],
-  [1710, 40000 + 33000 + 35000],
-  [1700, 27000 + 33000 + 23000],
-  [1690, 23000 + 21000 + 18000],
-  [1680, 21000 + 18000 + 16500],
-  [1670, 16500 + 11500 + 8800],
-  [1660, 11500 + 7200 + 6100],
-  [1640, 7200 + 6100],
+  [1750, 106000, 50000],
+  [1740, 106000, 40000],
+  [1730,  96000, 40000],
+  [1720,  82000, 40000],
+  [1710,  75000, 30000],
+  [1700,  60000, 30000],
+  [1690,  41000,     0],
+  [1680,  35500,     0],
+  [1670,  20300,     0],
+  [1660,  13600,     0],
+  [1640,   7200,     0],
 ];
 
 // ── !배럭/부캐 — 배럭 목록 + 주급 계산 ──
@@ -191,7 +193,8 @@ export function buildCharacters(data) {
   });
 
   const mainServer = sorted[0].ServerName;
-  let gold = 0;
+  let goldFree = 0;   // 비귀속 골드 합산
+  let goldBound = 0;  // 귀속 골드 합산 (지평의 성당)
   let out = `[${mainServer}]\n`;
   let mainCount = 0;
 
@@ -199,10 +202,17 @@ export function buildCharacters(data) {
     if (ch.ServerName !== mainServer) continue;
     const lv = parseInt(ch.ItemAvgLevel.replace(/,/g, ''), 10);
     const entry = GOLD_TABLE.find(([min]) => lv >= min);
-    if (entry) gold += entry[1];
+    if (entry) {
+      goldFree  += entry[1];
+      goldBound += entry[2];
+    }
     out += `Lv${ch.ItemAvgLevel.replace(/,/g, '')} [${ch.CharacterClassName.substring(0, 2)}] ${ch.CharacterName}\n`;
     mainCount++;
-    if (mainCount === 6) out += `●주급 [${gold}G]\n` + '\u200b'.repeat(500) + '\n';
+    if (mainCount === 6) {
+      out += `●주급 [${goldFree}G]\n`;
+      if (goldBound > 0) out += `●귀속 [${goldBound}G]\n`;
+      out += '\u200b'.repeat(500) + '\n';
+    }
   }
 
   return out.trimEnd();
