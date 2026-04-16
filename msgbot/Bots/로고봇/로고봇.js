@@ -1,5 +1,8 @@
 const scriptName = "로고봇";
 
+// 한용희 replier 캐시 — 에러 알림 및 !전달 명령어에 사용
+var hanReplier = null;
+
 // =====================================================
 // 서버 설정
 // BOT_SECRET은 Cloudflare Worker에서 설정한 값과 동일해야 함
@@ -103,6 +106,39 @@ function sendToServer(room, msg, sender, isGroupChat) {
 }
 
 // =====================================================
+// 봇 시작 시 자동 세션 초기화 (백그라운드 스레드)
+// 앱이 완전히 로드된 후 실행되도록 3초 대기
+// =====================================================
+new java.lang.Thread(function() {
+  var delays = [3000, 5000, 10000, 20000];
+  for (var i = 0; i < delays.length; i++) {
+    try {
+      java.lang.Thread.sleep(delays[i]);
+      Log.debug("[로고봇] 자동 세션 초기화 시도 " + (i + 1), true);
+      if (uploadSession()) {
+        Log.debug("[로고봇] 자동 세션 초기화 완료", true);
+        break;
+      }
+    } catch (e) {
+      Log.error("[로고봇] 자동 세션 초기화 오류: " + e, true);
+    }
+  }
+}).start();
+
+// 스크립트 재컴파일 시 한용희 세션 복원 시도
+(function() {
+  try {
+    var cachedAction = com.xfl.msgbot.application.service.NotificationListener.Companion.getSession("com.kakao.talk", "한용희");
+    if (cachedAction != null) {
+      hanReplier = new com.xfl.msgbot.script.api.legacy.SessionCacheReplier("com.kakao.talk", cachedAction, "한용희", false, "");
+      Log.debug("[로고봇] 한용희 세션 복원 완료", true);
+    }
+  } catch (e) {
+    Log.debug("[로고봇] 한용희 세션 복원 실패: " + e, true);
+  }
+})();
+
+// =====================================================
 // 카카오톡 알림 수신 → 서버 전달 → 답장
 // =====================================================
 function onNotificationPosted(sbn, sm) {
@@ -127,26 +163,61 @@ function onNotificationPosted(sbn, sm) {
     var replier = new com.xfl.msgbot.script.api.legacy.SessionCacheReplier(packageName, action, room, false, "");
     com.xfl.msgbot.application.service.NotificationListener.Companion.setSession(packageName, room, action);
 
-    // !세션 명령어: 모바일에서 직접 처리 (서버 세션 갱신)
-    if (msg === "!세션") {
-      var ok = uploadSession();
-      replier.reply(ok ? "세션 갱신 완료" : "세션 갱신 실패 - 로그 확인");
-      continue;
-    }
-
-    var data = sendToServer(room, msg, sender, isGroupChat);
-    if (!data) continue;
-
-    if (data.kakaolink) {
-      // 서버에서 카카오링크 데이터 반환 → 모바일에서 전송
-      try {
-        kakaoClient.sendLink(room, data.kakaolink, 'custom').awaitResult();
-      } catch (e) {
-        replier.reply("카카오링크 전송 실패: " + e);
-        Log.error("[로고봇] 카카오링크 오류: " + e, true);
+    try {
+      // sender가 한용희이면 replier 갱신 후 'test' 응답
+      if (sender === "한용희") {
+        hanReplier = replier;
+        replier.reply("test");
       }
-    } else if (data.reply != null) {
-      replier.reply(data.reply);
+
+      // !세션 명령어: 모바일에서 직접 처리 (서버 세션 갱신)
+      if (msg === "!세션") {
+        var ok = uploadSession();
+        replier.reply(ok ? "세션 갱신 완료" : "세션 갱신 실패 - 로그 확인");
+        continue;
+      }
+
+      // !전달 명령어: 누구나 사용 가능, 한용희에게 메시지 전달
+      if (msg.startsWith("!전달")) {
+        var content = msg.length > 3 ? msg.substring(3).trim() : "";
+        if (content === "") {
+          replier.reply("사용법: !전달 전달할내용");
+        } else if (hanReplier == null) {
+          replier.reply("한용희 세션 없음 — 한용희가 먼저 메시지를 보내야 합니다");
+        } else {
+          hanReplier.reply("[전달] " + sender + ": " + content);
+          replier.reply("전달 완료");
+        }
+        continue;
+      }
+
+      var data = sendToServer(room, msg, sender, isGroupChat);
+      if (!data) continue;
+
+      if (data.kakaolink) {
+        // 서버에서 카카오링크 데이터 반환 → 모바일에서 전송
+        try {
+          kakaoClient.sendLink(room, data.kakaolink, 'custom').awaitResult();
+        } catch (e) {
+          replier.reply("카카오링크 전송 실패: " + e);
+          Log.error("[로고봇] 카카오링크 오류: " + e, true);
+        }
+      } else if (data.reply != null) {
+        replier.reply(data.reply);
+      }
+
+    } catch (e) {
+      // 루프 내부 에러 로그
+      Log.error("[로고봇] 오류: " + e, true);
+      // 한용희에게 에러 내용 전송
+      try {
+        if (hanReplier != null) {
+          var lineInfo = (e.lineNumber != null) ? ("줄: " + e.lineNumber) : "줄: 알 수 없음";
+          hanReplier.reply("[ERROR] " + scriptName + ".js\n오류: " + (e.message || String(e)) + "\n" + lineInfo);
+        }
+      } catch (e2) {
+        Log.error("[로고봇] 에러 전송 실패: " + e2, true);
+      }
     }
   }
 }
