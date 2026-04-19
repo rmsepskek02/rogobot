@@ -164,8 +164,8 @@ function onNotificationPosted(sbn, sm) {
     com.xfl.msgbot.application.service.NotificationListener.Companion.setSession(packageName, room, action);
 
     try {
-      // sender가 한용희이면 replier 갱신 후 'test' 응답
-      if (sender === "한용희") {
+      // 한용희 1:1방이면 replier 갱신 후 'test' 응답
+      if (room === "한용희") {
         hanReplier = replier;
         replier.reply("test");
       }
