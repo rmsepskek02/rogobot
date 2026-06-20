@@ -204,7 +204,7 @@ export async function buildCharacterInfo(data) {
         engravings,
         gems4,
         combatPower,
-        stat: stats + gemsDesc + ` 최생: ${maxHp}`,
+        stat: stats + gemsDesc + `\n최생: ${maxHp}`,
         character: [arkChar, statExtra.trimEnd()].filter(Boolean).join(' / '),
         description,
         card: cardEffect,
