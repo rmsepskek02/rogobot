@@ -135,13 +135,13 @@ export async function buildCharacterInfo(data) {
   const evVal = arkPassive['Points'][0]['Value'];
   const rlName = arkPassive['Points'][1]['Name'].slice(0, 1);
   const rlVal = arkPassive['Points'][1]['Value'];
-  const stats = `공: ${atk} 최생: ${maxHp}\n${evName}: ${evVal} ${rlName}: ${rlVal} `;
+  const stats = `공: ${atk} 최생: ${maxHp} `;
 
   // 카드
   const cardItems = card?.['Effects']?.[0]?.['Items'] || [];
   const cardEffect = cardItems.length ? cardItems[cardItems.length - 1]['Name'] : '';
 
-  const title = `${itemLevel} / ${weapon}\n${expLevel} / ${charLevel} / ${avgQuality}`;
+  const title = `${itemLevel} / ${weapon}\n${expLevel} / ${avgQuality}`;
   const description = `${className} / ${server}`;
   const imageUrl = await getCharacterImage(name);
   const imageString = imageUrl.replace('https://img.lostark.co.kr/armory/', '');

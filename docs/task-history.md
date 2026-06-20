@@ -11,3 +11,4 @@
 | 2026-04-16 | Server Refactor | [docs/2026-04-16-14:00_server-refactor/Plan.md](2026-04-16-14:00_server-refactor/Plan.md) |
 | 2026-06-20 | Clear Gold Update | [docs/2026-06-20 00-00-clear-gold-update/Plan.md](2026-06-20%2000-00-clear-gold-update/Plan.md) |
 | 2026-06-20 | 정보명령어 출력수정 | [docs/2026-06-20 01-00-정보명령어-출력수정/Plan.md](2026-06-20%2001-00-정보명령어-출력수정/Plan.md) |
+| 2026-06-20 | 정보명령어 필드삭제 | [docs/2026-06-20 02-00-정보명령어-필드삭제/Plan.md](2026-06-20%2002-00-정보명령어-필드삭제/Plan.md) |
