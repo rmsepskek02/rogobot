@@ -77,8 +77,8 @@ export async function buildCharacterInfo(data) {
         const n = e['Name'].slice(0, 1);
         const lv = e['Level'];
         let gr = e['Grade'] === '전설' ? '전' : e['Grade'] === '영웅' ? '영' : '';
-        engravings += `${n}${gr}${lv} `;
-        if (e['AbilityStoneLevel'] != null) stone += `${n}${e['AbilityStoneLevel']} `;
+        engravings += `${n}${gr}${lv}`;
+        if (e['AbilityStoneLevel'] != null) stone += `${n}${e['AbilityStoneLevel']}`;
       }
       engravings += stone;
     }
@@ -110,7 +110,8 @@ export async function buildCharacterInfo(data) {
     gemsDesc = stoneAtk.length > 2 ? `공증:${stoneAtk.slice(1)}` : '';
   } else {
     const gDesc = gem?.['Effects']?.['Description'] || '';
-    gemsDesc += gDesc.slice(-6, -2) + stoneAtk;
+    const pct = gDesc.replace(/<[^>]*>/g, '').match(/[\d.]+%/);
+    gemsDesc += (pct ? pct[0] : '') + stoneAtk;
     const dmg = [], cool = [];
     for (const g of gemList) {
       const n = g['Name'], lv = g['Level'];
@@ -120,7 +121,7 @@ export async function buildCharacterInfo(data) {
       else if (n.includes('홍염')) cool.push(lv - 2);
     }
     dmg.sort((a, b) => b - a); cool.sort((a, b) => b - a);
-    gems4 = `${dmg.join(', ')} / ${cool.join(', ')}`;
+    gems4 = `${dmg.join(',')} / ${cool.join(',')}`;
   }
 
   // 스탯
