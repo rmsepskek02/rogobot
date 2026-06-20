@@ -4,7 +4,11 @@
       "Bash(node index.js)",
       "Bash(npx wrangler *)",
       "Bash(node -e ' *)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(git push *)",
+      "Bash(git commit -m ' *)",
+      "mcp__visualize__read_me",
+      "mcp__visualize__show_widget"
     ],
     "additionalDirectories": [
       "d:\\Dmain\\dev\\RogoBotGit\\rogobot\\docs"
