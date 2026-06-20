@@ -18,6 +18,11 @@ function stripHtml(str) {
   return str.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '');
 }
 
+// 스킬 이름을 약어로 변환 (각 단어 첫 글자 조합)
+function abbrevSkill(skillName) {
+  return skillName.split(' ').map(w => w[0]).join('');
+}
+
 // 카카오링크 templateArgs 빌드 (전송은 모바일에서 담당)
 export async function buildCharacterInfo(data) {
   const profile = data['ArmoryProfile'];
@@ -89,7 +94,7 @@ export async function buildCharacterInfo(data) {
   }
 
   // 스톤 공증
-  let stoneAtk = '+';
+  let stoneAtk = '';
   for (const eq of equipment) {
     if (eq['Type'] === '어빌리티 스톤') {
       for (const t of tooltipToJSON(eq['Tooltip'])) {
@@ -107,7 +112,7 @@ export async function buildCharacterInfo(data) {
   const gemList = gem?.['Gems'];
   if (!gemList) {
     gems4 = '쌀';
-    gemsDesc = stoneAtk.length > 2 ? `공증:${stoneAtk.slice(1)}` : '';
+    gemsDesc = stoneAtk ? `공증:${stoneAtk}` : '';
   } else {
     const gDesc = gem?.['Effects']?.['Description'] || '';
     const pct = gDesc.replace(/<[^>]*>/g, '').match(/[\d.]+%/);
@@ -126,23 +131,67 @@ export async function buildCharacterInfo(data) {
 
   // 스탯
   let maxHp = '', atk = '', charStat = '';
+  let statExtra = '';
   for (const s of (profile['Stats'] || [])) {
     if (s['Type'] === '최대 생명력') maxHp = s['Value'];
     else if (s['Type'] === '공격력') atk = s['Value'];
     else if (parseInt(s['Value']) >= 100) charStat += `${s['Type']} ${s['Value']} `;
+    // 특화/신속만 statExtra에 추가
+    if ((s['Type'] === '특화' || s['Type'] === '신속') && parseInt(s['Value']) >= 100) {
+      statExtra += `${s['Type']}${s['Value']} `;
+    }
   }
   const evName = arkPassive['Points'][0]['Name'].slice(0, 1);
   const evVal = arkPassive['Points'][0]['Value'];
   const rlName = arkPassive['Points'][1]['Name'].slice(0, 1);
   const rlVal = arkPassive['Points'][1]['Value'];
-  const stats = `공: ${atk} 최생: ${maxHp} `;
+  const stats = `공: ${atk} `;
+
+  // 진화/깨달음 티어 파싱
+  const arkEffects = arkPassive['Effects'] || [];
+  function parseArkTier(name, tier) {
+    return arkEffects
+      .filter(e => e['Name'] === name && (e['Description'] || '').includes(`${tier}티어`))
+      .map(e => {
+        const clean = (e['Description'] || '').replace(/<[^>]*>/g, '');
+        const m = clean.match(/\d티어\s+(.+?)\s+Lv\.(\d+)/);
+        return m ? { skill: m[1], lv: parseInt(m[2]) } : null;
+      })
+      .filter(Boolean);
+  }
+
+  // 진화 4·5티어 → character 필드
+  const ev4 = parseArkTier('진화', 4);
+  const ev5 = parseArkTier('진화', 5);
+  let arkChar = '';
+  if (ev4.length) arkChar += ev4.map(e => abbrevSkill(e.skill)).join('');
+  if (ev5.length) {
+    if (arkChar) arkChar += ' / ';
+    arkChar += ev5.map(e => `${abbrevSkill(e.skill)}${e.lv}`).join(' ');
+  }
+
+  // 깨달음 1티어 약어 → description 필드
+  const rl1 = parseArkTier('깨달음', 1);
+  const rl1Abbrev = rl1.map(e => abbrevSkill(e.skill)).join('');
+
+  // 코어 등급 집계 → description 필드
+  const arkGrid = data['ArkGrid'];
+  let coreGrade = '';
+  if (arkGrid && arkGrid['Slots']) {
+    const gradeMap = { '고대': 0, '전설': 0, '유물': 0, '영웅': 0 };
+    for (const slot of arkGrid['Slots']) {
+      if (slot['Grade'] in gradeMap) gradeMap[slot['Grade']]++;
+    }
+    const abbr = [['고대', '고'], ['전설', '전'], ['유물', '유'], ['영웅', '영']];
+    coreGrade = abbr.filter(([g]) => gradeMap[g] > 0).map(([g, a]) => `${gradeMap[g]}${a}`).join('');
+  }
 
   // 카드
   const cardItems = card?.['Effects']?.[0]?.['Items'] || [];
   const cardEffect = cardItems.length ? cardItems[cardItems.length - 1]['Name'] : '';
 
   const title = `${itemLevel} / ${weapon}\n${expLevel} / ${avgQuality}`;
-  const description = `${className} / ${server}`;
+  const description = [server, className, rl1Abbrev, coreGrade].filter(Boolean).join(' / ');
   const imageUrl = await getCharacterImage(name);
   const imageString = imageUrl.replace('https://img.lostark.co.kr/armory/', '');
 
@@ -155,8 +204,8 @@ export async function buildCharacterInfo(data) {
         engravings,
         gems4,
         combatPower,
-        stat: stats + gemsDesc,
-        character: charStat,
+        stat: stats + gemsDesc + ` 최생: ${maxHp} ` + statExtra.trimEnd(),
+        character: arkChar,
         description,
         card: cardEffect,
         illoa: name,
