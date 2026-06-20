@@ -111,16 +111,19 @@ export async function buildCharacterInfo(data) {
   }
 
   // 보석
-  let gems4 = '', gemsDesc = '공증:';
+  let gems4 = '', gemsDesc = '';
   const gemList = gem?.['Gems'];
   if (!gemList) {
     gems4 = '쌀';
-    gemsDesc = stoneAtk ? `공증:${stoneAtk}` : '';
+    const stoneVal = stoneAtk ? parseFloat(stoneAtk) : 0;
+    gemsDesc = stoneVal > 0 ? `공증:${stoneVal.toFixed(2)}%` : '';
   } else {
     const gDesc = gem?.['Effects']?.['Description'] || '';
     const pct = gDesc.replace(/<[^>]*>/g, '').match(/[\d.]+%/);
-    const gemPct = pct ? pct[0] : '';
-    gemsDesc = (gemPct || stoneAtk) ? `공증:${gemPct}${stoneAtk}` : '';
+    const gemVal = pct ? parseFloat(pct[0]) : 0;
+    const stoneVal = stoneAtk ? parseFloat(stoneAtk) : 0;
+    const total = gemVal + stoneVal;
+    gemsDesc = total > 0 ? `공증:${total.toFixed(2)}%` : '';
     const dmg = [], cool = [];
     for (const g of gemList) {
       const n = g['Name'], lv = g['Level'];
