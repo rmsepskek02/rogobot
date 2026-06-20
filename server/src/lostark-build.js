@@ -98,10 +98,13 @@ export async function buildCharacterInfo(data) {
   for (const eq of equipment) {
     if (eq['Type'] === '어빌리티 스톤') {
       for (const t of tooltipToJSON(eq['Tooltip'])) {
-        if (t['type']?.includes('IndentStringGroup') && typeof t['value'] === 'object' && t['value']?.['Element_001']) {
-          const c = t['value']['Element_001']['contentStr'];
-          if (c?.['Element_003']) stoneAtk += c['Element_003']['contentStr'].slice(-6);
-          else stoneAtk = '%';
+        if (t['type']?.includes('IndentStringGroup') && typeof t['value'] === 'object' && t['value']?.['Element_000']) {
+          const c = t['value']['Element_000']['contentStr'];
+          if (c?.['Element_003']) {
+            const raw = c['Element_003']['contentStr'].replace(/<[^>]*>/g, '');
+            const m = raw.match(/[+-][\d.]+%/);
+            if (m) stoneAtk = m[0];
+          }
         }
       }
     }
