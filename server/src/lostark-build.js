@@ -116,7 +116,8 @@ export async function buildCharacterInfo(data) {
   } else {
     const gDesc = gem?.['Effects']?.['Description'] || '';
     const pct = gDesc.replace(/<[^>]*>/g, '').match(/[\d.]+%/);
-    gemsDesc += (pct ? pct[0] : '') + stoneAtk;
+    const gemPct = pct ? pct[0] : '';
+    gemsDesc = (gemPct || stoneAtk) ? `공증:${gemPct}${stoneAtk}` : '';
     const dmg = [], cool = [];
     for (const g of gemList) {
       const n = g['Name'], lv = g['Level'];
@@ -204,7 +205,7 @@ export async function buildCharacterInfo(data) {
         engravings,
         gems4,
         combatPower,
-        stat: stats + gemsDesc + `\n최생: ${maxHp}`,
+        stat: stats + (gemsDesc ? gemsDesc + '\n' : '') + `최생: ${maxHp}`,
         character: [arkChar, statExtra.trimEnd()].filter(Boolean).join('\n'),
         description,
         card: cardEffect,
